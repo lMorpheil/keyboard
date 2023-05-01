@@ -1,20 +1,21 @@
 export default class Render {
-  constructor(props) {
+  constructor(props, lang) {
     this.container = document.body;
     this.props = props;
+    this.lang = lang;
 
     this.init();
   }
 
   init() {
-    const wrapper = this.createWrapper('container');
-    wrapper.insertAdjacentElement('afterbegin', this.createDisplay());
-    wrapper.insertAdjacentElement('beforeend', this.createKeyboard(this.props));
+    const wrapper = Render.createWrapper('container');
+    wrapper.insertAdjacentElement('afterbegin', Render.createDisplay());
+    wrapper.insertAdjacentElement('beforeend', Render.createKeyboard(this.props, this.lang));
 
     this.container.insertAdjacentElement('afterbegin', wrapper);
   }
 
-  createWrapper(className) {
+  static createWrapper(className) {
     const div = document.createElement('div');
 
     if (className) {
@@ -24,21 +25,19 @@ export default class Render {
     return div;
   }
 
-  createDisplay() {
-    const displayWrapper = this.createWrapper();
+  static createDisplay() {
+    const displayWrapper = Render.createWrapper();
     const textarea = document.createElement('textarea');
     textarea.classList.add('display');
-    textarea.disabled = true;
     displayWrapper.insertAdjacentElement('afterbegin', textarea);
 
     return displayWrapper;
   }
 
-  createKeyboard(props) {
-    const keyboardWrapper = this.createWrapper('keyboard');
-
+  static createKeyboard(props, lang) {
+    const keyboardWrapper = Render.createWrapper('keyboard');
     props.forEach(((item) => {
-      const el = this.createButton(item);
+      const el = Render.createButton(item, lang);
 
       keyboardWrapper.insertAdjacentElement('beforeend', el);
     }));
@@ -46,12 +45,13 @@ export default class Render {
     return keyboardWrapper;
   }
 
-  createButton(props) {
+  static createButton(props, lang) {
     const el = document.createElement('button');
     el.type = 'button';
     el.classList.add('btn');
-    el.innerHTML = `<span>${props.symbol}</span>`;
-    el.dataset.active = props.symbol;
+    el.innerHTML = `<span>${Array.isArray(props.symbol) ? props.symbol[lang] : props.symbol}</span>`;
+    el.dataset.active = Array.isArray(props.symbol) ? props.symbol[lang] : props.symbol;
+    el.dataset.code = props.code ? props.code : '';
 
     if (props.altSymbol) {
       el.innerHTML += `<span class='btn__alt'>${props.altSymbol}</span>`;
@@ -59,10 +59,6 @@ export default class Render {
 
     if (props.className) {
       el.classList += ` ${props.className}`;
-    }
-
-    if (props.data) {
-      el.dataset = props.data;
     }
 
     return el;
